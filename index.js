@@ -22,8 +22,8 @@ app.post('/pay', (req, res) => {
             "payment_method": "paypal"
         },
         "redirect_urls": {
-            "return_url": "http://localhost:3000/success",
-            "cancel_url": "http://localhost:3000/cancel"
+            "return_url": "http://localhost:2300/success",
+            "cancel_url": "http://localhost:2300/cancel"
         },
         "transactions": [{
             "item_list": {
@@ -57,5 +57,33 @@ app.post('/pay', (req, res) => {
         }
     });
 });
+
+app.get('/success', (req, res) => {
+    const payerId = req.query.PayerID;
+    const paymentId = req.query.paymentId;
+
+    const execute_payment_json = {
+        "payer_id": payerId,
+        "transactions": [{
+            "amount": {
+                "currency": "USD",
+                "total": "25.00"
+            }
+        }]
+    };
+
+    paypal.payment.execute(paymentId, execute_payment_json, function (error, payment) {
+        if (error) {
+            console.log(error.response);
+            res.send('Error');
+            throw error;
+        } else {
+            console.log(JSON.stringify(payment));
+            res.send('Payment Successful');
+        }
+    });
+});
+
+app.get("/cancel", (req, res) => res.send("Cancelled"));
 
 app.listen(PORT, () => console.log(`Server started on ${PORT}`));
